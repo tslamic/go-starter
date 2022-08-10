@@ -1,0 +1,11 @@
+linters:
+  enable-all: true
+  disable:
+    - exhaustivestruct
+    - exhaustruct
+    - gochecknoglobals
+    - nlreturn
+
+run:
+  go: '1.19'
+  timeout: 1m
