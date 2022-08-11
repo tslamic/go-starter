@@ -29,7 +29,7 @@ test:
 
 .PHONY: build
 build:
-	@docker build --no-cache --build-arg LDFLAGS='$(LDFLAGS)' -t $(or $(TAG),$(PKG)) .
+	@docker build --build-arg LDFLAGS='$(LDFLAGS)' -t $(or $(TAG),$(PKG)) .
 
 .PHONY: build-local
 build-local:
