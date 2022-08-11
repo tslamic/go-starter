@@ -1,10 +1,9 @@
-# JetBrains
 .idea
-
-# VSCode
 .vscode
 .history
-*.vsix
-
-# Git
 .git
+.github
+.golangci.yml
+*.md
+*.vsix
+Makefile
