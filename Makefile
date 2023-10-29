@@ -1,4 +1,10 @@
+# Defaults.
 SHELL := /bin/bash -euo pipefail
+GOLANG_CI_LINT_VERSION := v1.55.1
+PACKAGE_NAME := $(shell head -n 1 go.mod | cut -c 8-)
+DOCKER_TAG ?= $(PACKAGE_NAME)
+PWD := $(shell pwd)
+CGO := 0
 
 # Build info.
 BUILDER := $(shell whoami)@$(shell hostname)
@@ -10,34 +16,29 @@ COMMIT := $(shell git rev-parse --short HEAD)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 # Linker flags.
-PKG := $(shell head -n 1 go.mod | cut -c 8-)
-VER := $(PKG)/version
-LDFLAGS := -s -w \
-	-X $(VER).Version=$(or $(VERSION),unknown) \
-	-X $(VER).Commit=$(or $(COMMIT),unknown) \
-	-X $(VER).Branch=$(or $(BRANCH),unknown) \
-	-X $(VER).BuiltAt=$(NOW) \
-	-X $(VER).Builder=$(BUILDER)
+SRC := $(PACKAGE_NAME)/version
+LDFLAGS := "-s -w \
+	-X $(SRC).Version=$(or $(VERSION),unknown) \
+	-X $(SRC).Commit=$(or $(COMMIT),unknown) \
+	-X $(SRC).Branch=$(or $(BRANCH),unknown) \
+	-X $(SRC).BuiltAt=$(NOW) \
+	-X $(SRC).Builder=$(BUILDER)"
 
-TAG ?= $(PKG)
-PWD := $(shell pwd)
-GOLANG_CI_LINT_VERSION := v1.55.1
-BINARY_NAME := app
+.PHONY: default lint test build build-local run run-local clean
 
-.PHONY: lint test build build-local run run-local ci clean
+default: lint test build-local run-local
+
 lint:
-	@go vet ./...
 	@docker run -t --rm -v $(PWD):/app -w /app golangci/golangci-lint:$(GOLANG_CI_LINT_VERSION) golangci-lint run -v
 test:
 	@go test -v -race ./...
 build:
-	@docker build --build-arg LDFLAGS='$(LDFLAGS)' -t $(TAG) .
+	@docker build --build-arg LDFLAGS=$(LDFLAGS) CGO_ENABLED=$(CGO) -t $(DOCKER_TAG) .
 build-local:
-	@CGO_ENABLED=0 go build -o $(BINARY_NAME) -ldflags '$(LDFLAGS)'
+	@LDFLAGS=$(LDFLAGS) CGO_ENABLED=$(CGO) ./bin/build.sh
 run:
-	@docker run --rm $(TAG)
+	@docker run --rm $(DOCKER_TAG)
 run-local:
-	./$(BINARY_NAME)
-ci: lint test build-local run-local
+	./app
 clean:
-	@rm -f $(BINARY_NAME)
+	@rm -f ./app

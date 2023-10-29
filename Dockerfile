@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:latest AS builder
-ARG LDFLAGS
+FROM golang:1.21 AS builder
+ARG LDFLAGS=''
+ARG CGO_ENABLED=0
 WORKDIR /builder
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 COPY ./ .
-RUN CGO_ENABLED=0 sh -c "go build -o app -ldflags '${LDFLAGS}'"
+RUN chmod +x ./bin/build.sh && ./bin/build.sh
 
 FROM scratch
 COPY --from=builder /builder/app .
