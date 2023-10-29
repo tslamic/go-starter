@@ -1,6 +1,8 @@
 package version
 
-// Version information. These will be filled in by the compiler.
+// Version information. Populated during the build process.
+//
+//nolint:gochecknoglobals
 var (
 	Version = "local"
 	Commit  = ""
