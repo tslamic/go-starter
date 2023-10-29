@@ -1,14 +1,7 @@
 linters:
   enable-all: true
-  disable:
-    - exhaustivestruct
-    - exhaustruct
-    - gochecknoglobals
-    - nlreturn
 
 linters-settings:
-  maligned:
-    suggest-new: true
   misspell:
     locale: US
   depguard:
@@ -17,6 +10,7 @@ linters-settings:
         allow:
           - $gostd
           - github.com
+          - golang.org
 
 run:
   go: '1.21'
